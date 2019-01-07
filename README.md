@@ -21,7 +21,9 @@ You can use the Palettes utility class, which contains popular palettes of 16 co
 
 Used free pixel fonts: marksman-v1 and Ubble by somepx https://twitter.com/somepx and the standard ZX-Spectrum font.
 
-=====================================
+![](screen.jpg)
+
+
 
 # Pixel Tracery v.0.3
 ## Класс расширения Unity Texture2D реализующий печать в Texture2D.
