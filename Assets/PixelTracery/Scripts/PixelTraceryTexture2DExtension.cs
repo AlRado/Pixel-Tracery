@@ -33,7 +33,7 @@ namespace PixelTracery {
      */
 
     /**
-     * Pixel Tracery v.0.3
+     * Pixel Tracery v.0.3.1
      * Main functions:
      * - print sprites with parameters: scale, flip, rotate, alpha color, tint color, circle shift, mask with position 
      * - print text with sprite fonts with parameters: scale, flip, rotate, alpha color, tint color, fixed width, auto width
@@ -51,13 +51,13 @@ namespace PixelTracery {
     #region Public
 
     public static void PixSetPixel (this Texture2D texture, float x, float y, Color32 color) {
-      PixSetPixel (texture, x, y, color, null, 0, 0, 0, 0);
+      _setPixel (texture, x, y, color, null, 0, 0, 0, 0);
     }
 
     public static void PixSetPixel (this Texture2D texture, float x, float y, Color32 color,
       Color32[] mask, int maskWidth, int maskHeight, int maskX = 0, int maskY = 0) {
 
-      pixel (texture, x, y, texture.width, texture.height, color, mask, maskWidth, maskHeight, maskX, maskY);
+      _setPixel (texture, x, y, color, mask, maskWidth, maskHeight, maskX, maskY);
     }
 
     public static Color32 PixGetPixel (this Texture2D texture, float x, float y) {
@@ -159,47 +159,13 @@ namespace PixelTracery {
     }
 
     public static void PixLine (this Texture2D texture, float x0, float y0, float x1, float y1, Color32 color) {
-        PixLine (texture, x0, y0, x1, y1, color, null, 0, 0, 0, 0);
+        _line (texture, x0, y0, x1, y1, color, null, 0, 0, 0, 0);
     }
 
     public static void PixLine (this Texture2D texture, float x0, float y0, float x1, float y1, Color32 color,
       Color32[] mask, int maskWidth, int maskHeight, int maskX = 0, int maskY = 0) {
-      int width = texture.width;
-      int height = texture.height;
-      int _x0 = (int) x0;
-      int _y0 = (int) y0;
-      int _x1 = (int) x1;
-      int _y1 = (int) y1;
 
-      bool isSteep = Math.Abs (_y1 - _y0) > Math.Abs (_x1 - _x0);
-      if (isSteep) {
-        Swap (ref _x0, ref _y0);
-        Swap (ref _x1, ref _y1);
-      }
-      if (_x0 > _x1) {
-        Swap (ref _x0, ref _x1);
-        Swap (ref _y0, ref _y1);
-      }
-
-      int deltaX = _x1 - _x0;
-      int deltaY = Math.Abs (_y1 - _y0);
-
-      int correction = deltaX / 2;
-      int y = _y0;
-      int yStep = _y0 < _y1 ? 1 : -1;
-
-      for (int x = _x0; x <= _x1; x++) {
-        if (isSteep) {
-          pixel (texture, y, x, width, height, color, mask, maskWidth, maskHeight, maskX, maskY);
-        } else {
-          pixel (texture, x, y, width, height, color, mask, maskWidth, maskHeight, maskX, maskY);
-        }
-        correction = correction - deltaY;
-        if (correction < 0) {
-          y = y + yStep;
-          correction = correction + deltaX;
-        }
-      }
+        _line (texture, x0, y0, x1, y1, color, mask, maskWidth, maskHeight, maskX, maskY);
     }
 
     public static void PixCircle (this Texture2D texture, float x, float y, float radius, Color32 color, bool filled) {
@@ -215,20 +181,20 @@ namespace PixelTracery {
 
       while (cx >= cy) {
         if (filled) {
-          texture.PixLine (cx + x, cy + y, -cx + x, cy + y, color, mask, maskWidth, maskHeight, maskX, maskY);
-          texture.PixLine (cy + x, cx + y, -cy + x, cx + y, color, mask, maskWidth, maskHeight, maskX, maskY);
-          texture.PixLine (-cx + x, -cy + y, cx + x, -cy + y, color, mask, maskWidth, maskHeight, maskX, maskY);
-          texture.PixLine (-cy + x, -cx + y, cy + x, -cx + y, color, mask, maskWidth, maskHeight, maskX, maskY);
+          _line(texture, cx + x, cy + y, -cx + x, cy + y, color, mask, maskWidth, maskHeight, maskX, maskY);
+          _line(texture, cy + x, cx + y, -cy + x, cx + y, color, mask, maskWidth, maskHeight, maskX, maskY);
+          _line(texture, -cx + x, -cy + y, cx + x, -cy + y, color, mask, maskWidth, maskHeight, maskX, maskY);
+          _line(texture, -cy + x, -cx + y, cy + x, -cx + y, color, mask, maskWidth, maskHeight, maskX, maskY);
 
         } else {
-          texture.PixSetPixel (cx + x, cy + y, color, mask, maskWidth, maskHeight, maskX, maskY);
-          texture.PixSetPixel (cy + x, cx + y, color, mask, maskWidth, maskHeight, maskX, maskY);
-          texture.PixSetPixel (-cx + x, cy + y, color, mask, maskWidth, maskHeight, maskX, maskY);
-          texture.PixSetPixel (-cy + x, cx + y, color, mask, maskWidth, maskHeight, maskX, maskY);
-          texture.PixSetPixel (-cx + x, -cy + y, color, mask, maskWidth, maskHeight, maskX, maskY);
-          texture.PixSetPixel (-cy + x, -cx + y, color, mask, maskWidth, maskHeight, maskX, maskY);
-          texture.PixSetPixel (cx + x, -cy + y, color, mask, maskWidth, maskHeight, maskX, maskY);
-          texture.PixSetPixel (cy + x, -cx + y, color, mask, maskWidth, maskHeight, maskX, maskY);
+          _setPixel(texture, cx + x, cy + y, color, mask, maskWidth, maskHeight, maskX, maskY);
+          _setPixel(texture, cy + x, cx + y, color, mask, maskWidth, maskHeight, maskX, maskY);
+          _setPixel(texture, -cx + x, cy + y, color, mask, maskWidth, maskHeight, maskX, maskY);
+          _setPixel(texture, -cy + x, cx + y, color, mask, maskWidth, maskHeight, maskX, maskY);
+          _setPixel(texture, -cx + x, -cy + y, color, mask, maskWidth, maskHeight, maskX, maskY);
+          _setPixel(texture, -cy + x, -cx + y, color, mask, maskWidth, maskHeight, maskX, maskY);
+          _setPixel(texture, cx + x, -cy + y, color, mask, maskWidth, maskHeight, maskX, maskY);
+          _setPixel(texture, cy + x, -cx + y, color, mask, maskWidth, maskHeight, maskX, maskY);
         }
         cy++;
 
@@ -444,15 +410,15 @@ namespace PixelTracery {
 
         for (int py = 0; py < _height; py++) {
           for (int px = 0; px < _width; px++) {
-            texture.PixSetPixel (_x + px, _y + py, color, mask, maskWidth, maskHeight, maskX, maskY);
+            _setPixel(texture, _x + px, _y + py, color, mask, maskWidth, maskHeight, maskX, maskY);
           }
         }
 
       } else {
-        texture.PixLine (x, y, x, y + height, color, mask, maskWidth, maskHeight, maskX, maskY);
-        texture.PixLine (x, y + height, x + width, y + height, color, mask, maskWidth, maskHeight, maskX, maskY);
-        texture.PixLine (x + width, y + height, x + width, y, color, mask, maskWidth, maskHeight, maskX, maskY);
-        texture.PixLine (x + width, y, x, y, color, mask, maskWidth, maskHeight, maskX, maskY);
+        _line(texture, x, y, x, y + height, color, mask, maskWidth, maskHeight, maskX, maskY);
+        _line(texture, x, y + height, x + width, y + height, color, mask, maskWidth, maskHeight, maskX, maskY);
+        _line(texture, x + width, y + height, x + width, y, color, mask, maskWidth, maskHeight, maskX, maskY);
+        _line(texture, x + width, y, x, y, color, mask, maskWidth, maskHeight, maskX, maskY);
       }
     }
 
@@ -484,9 +450,9 @@ namespace PixelTracery {
         }
 
       } else {
-        texture.PixLine (x1, y1, x2, y2, color, mask, maskWidth, maskHeight, maskX, maskY);
-        texture.PixLine (x2, y2, x3, y3, color, mask, maskWidth, maskHeight, maskX, maskY);
-        texture.PixLine (x3, y3, x1, y1, color, mask, maskWidth, maskHeight, maskX, maskY);
+        _line(texture, x1, y1, x2, y2, color, mask, maskWidth, maskHeight, maskX, maskY);
+        _line(texture, x2, y2, x3, y3, color, mask, maskWidth, maskHeight, maskX, maskY);
+        _line(texture, x3, y3, x1, y1, color, mask, maskWidth, maskHeight, maskX, maskY);
       }
     }
 
@@ -512,7 +478,7 @@ namespace PixelTracery {
 
       int defaultCharWidth = 0;
       int textWidth = 0;
-      int fullWidth = PixGetTextWidth (texture, msg, font, scale);
+      int fullWidth = _getTextWidth (texture, msg, font, scale);
       foreach (var key in text) {
         if (!font.ContainsKey (key)) {
           textWidth += fixedWidth != -1 ? fixedWidth * scale : defaultCharWidth * scale;
@@ -543,20 +509,9 @@ namespace PixelTracery {
 
     // for better performance, use this method once, such as in Awake or Start
     public static int PixGetTextWidth (this Texture2D texture, object msg, Dictionary<char, Sprite> font, int scale = 1, int fixedWidth = -1) {
-      string text = msg.ToString ();
-      int defaultCharWidth = 0;
-      int fullWidth = 0;
-      foreach (var key in text) {
-        if (!font.ContainsKey (key)) {
-          fullWidth += fixedWidth != -1 ? fixedWidth * scale : defaultCharWidth * scale;
-          continue;
-        }
-        fullWidth += fixedWidth != -1 ? fixedWidth * scale : font[key].PixGetWidth () * scale;
-      }
-
-      return fullWidth;
-    }
-
+      return _getTextWidth (texture, msg, font, scale, fixedWidth);
+    } 
+    
     // we believe that the height of all characters of the font is the same and equal to the height of the first character
     // for better performance, use this method once, such as in Awake or Start
     public static int PixGetTextHeight (this Texture2D texture, Dictionary<char, Sprite> font, int scale = 1) {
@@ -586,6 +541,68 @@ namespace PixelTracery {
     #endregion
 
     #region Private
+
+    private static void _setPixel (this Texture2D texture, float x, float y, Color32 color,
+      Color32[] mask, int maskWidth, int maskHeight, int maskX = 0, int maskY = 0) {
+
+      pixel (texture, x, y, texture.width, texture.height, color, mask, maskWidth, maskHeight, maskX, maskY);
+    }
+
+    private static void _line (this Texture2D texture, float x0, float y0, float x1, float y1, Color32 color,
+      Color32[] mask, int maskWidth, int maskHeight, int maskX = 0, int maskY = 0) {
+
+      int width = texture.width;
+      int height = texture.height;
+      int _x0 = (int) x0;
+      int _y0 = (int) y0;
+      int _x1 = (int) x1;
+      int _y1 = (int) y1;
+
+      bool isSteep = Math.Abs (_y1 - _y0) > Math.Abs (_x1 - _x0);
+      if (isSteep) {
+        Swap (ref _x0, ref _y0);
+        Swap (ref _x1, ref _y1);
+      }
+      if (_x0 > _x1) {
+        Swap (ref _x0, ref _x1);
+        Swap (ref _y0, ref _y1);
+      }
+
+      int deltaX = _x1 - _x0;
+      int deltaY = Math.Abs (_y1 - _y0);
+
+      int correction = deltaX / 2;
+      int y = _y0;
+      int yStep = _y0 < _y1 ? 1 : -1;
+
+      for (int x = _x0; x <= _x1; x++) {
+        if (isSteep) {
+          pixel (texture, y, x, width, height, color, mask, maskWidth, maskHeight, maskX, maskY);
+        } else {
+          pixel (texture, x, y, width, height, color, mask, maskWidth, maskHeight, maskX, maskY);
+        }
+        correction = correction - deltaY;
+        if (correction < 0) {
+          y = y + yStep;
+          correction = correction + deltaX;
+        }
+      }
+    }
+
+    private static int _getTextWidth (this Texture2D texture, object msg, Dictionary<char, Sprite> font, int scale = 1, int fixedWidth = -1) {
+      string text = msg.ToString ();
+      int defaultCharWidth = 0;
+      int fullWidth = 0;
+      foreach (var key in text) {
+        if (!font.ContainsKey (key)) {
+          fullWidth += fixedWidth != -1 ? fixedWidth * scale : defaultCharWidth * scale;
+          continue;
+        }
+        fullWidth += fixedWidth != -1 ? fixedWidth * scale : font[key].PixGetWidth () * scale;
+      }
+
+      return fullWidth;
+    }
 
     private static void pixel (Texture2D texture, float x, float y, float width, float height, Color32 color,
       Color32[] mask = null, int maskWidth = 0, int maskHeight = 0, int maskX = 0, int maskY = 0) {
