@@ -370,6 +370,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62b5592cef8a8a34ebc3eb2e2c55d1c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  HandheldGameConsoleDemo: {fileID: 1917111805}
+  MiniArcadeMachineDemo: {fileID: 1991778982}
   EraserMaterial: {fileID: 2100000, guid: 63d639d43a63bf546bed4757b5b5ab1c, type: 2}
   PaperMaterial: {fileID: 2100000, guid: 58fde5e4f840c314abc71dbaebdecc65, type: 2}
   Pencil1Material: {fileID: 2100000, guid: 26cf0fe3ca733034797ec81e423d65f4, type: 2}

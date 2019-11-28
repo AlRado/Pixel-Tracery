@@ -5,6 +5,11 @@ using UnityEngine;
 
 public class PixelTraceryScene : MonoBehaviour {
 
+  public RandomDemoLauncher HandheldGameConsoleDemo;
+  public RandomDemoLauncher MiniArcadeMachineDemo;
+
+  public const float SHOW_DELAY = 0.2f;
+
   public const string ZX_FONT_PATH = "SpriteFonts/ZxSpectrumFont";
   public const string UBBLE_FONT_PATH = "SpriteFonts/Ubble";
   public const string MARKSMAN_FONT_PATH = "SpriteFonts/marksman-v1";
@@ -15,14 +20,14 @@ public class PixelTraceryScene : MonoBehaviour {
   private const string DESC_3 = "* old-school 2d-games inside your unity 3d-game!";
   private const string DESC_4 = "Simple, fast, reliable.";
 
-  private const string BEST_ERASER = "Best eraser";
-  private const string PENCIL_DESC_1 = "Pencil for creativity";
-  private const string PENCIL_DESC_2 = "Magic pencil";
-  private const string BEST = "BEST";
-  private const string RETRO = "RETRO";
-  private const string MACHINE = "MACHINE";
-  private const string ARCADE = "ARCADE";
-  private const string FOREVER = "FOREVER";
+  private const string ERASER_TEXT = "Best eraser";
+  private const string PENCIL_TEXT_1 = "Pencil for creativity";
+  private const string PENCIL_TEXT_2 = "Magic pencil";
+  private const string BEST_TEXT = "BEST";
+  private const string RETRO_TEXT = "RETRO";
+  private const string MACHINE_TEXT = "MACHINE";
+  private const string ARCADE_TEXT = "ARCADE";
+  private const string FOREVER_TEXT = "FOREVER";
 
   public Material EraserMaterial;
   public Material PaperMaterial;
@@ -34,7 +39,13 @@ public class PixelTraceryScene : MonoBehaviour {
   private Texture2D defaultPaperTexture;
   private Texture2D defaultPencil1Texture;
   private Texture2D defaultPencil2Texture;
-  private Texture2D defaultMiniArcadeMachineBodyTexture;
+  private Texture2D defaultArcadeMachineBodyTexture;
+
+  private Texture2D eraserTexture;
+  private Texture2D paperTexture;
+  private Texture2D pencil1Texture;
+  private Texture2D pencil2Texture;
+  private Texture2D arcadeMachineBodyTexture;
 
   private Dictionary<char, Sprite> zxFont;
   private Color32 zxFontAlpha;
@@ -60,76 +71,142 @@ public class PixelTraceryScene : MonoBehaviour {
     marksmanFont = marksmanFontSprites.PixToFontDictionary ();
     marksmanFontAlpha = marksmanFontSprites[0].PixGetColors () [0];
 
-    drawStatic ();
+    HandheldGameConsoleDemo.enabled = false;
+    MiniArcadeMachineDemo.enabled = false;
+
+    defaultEraserTexture = (Texture2D) EraserMaterial.mainTexture;
+    defaultArcadeMachineBodyTexture = (Texture2D) MiniArcadeMachineBodyMaterial.mainTexture;
+    defaultPencil1Texture = (Texture2D) Pencil1Material.mainTexture;
+    defaultPencil2Texture = (Texture2D) Pencil2Material.mainTexture;
+    defaultPaperTexture = (Texture2D) PaperMaterial.mainTexture;
+
+    StartCoroutine (printCoroutine());
   }
 
-  private void drawStatic () {
-    defaultEraserTexture = (Texture2D) EraserMaterial.mainTexture;
-    Texture2D eraserTexture = cloneTexture2D (defaultEraserTexture);
+  private IEnumerator printCoroutine () {
+    // printOnEraser
+    var step = 5;
+    var shift = 20;
+    for (int i = -shift*step; i < 0; i+=step) {
+        printOnEraser(0, i);
+        yield return new WaitForSeconds(SHOW_DELAY/step);
+    }
+    yield return new WaitForSeconds(SHOW_DELAY);
+
+    // printOnArcadeMachine
+    for (int i = -shift*step; i < 0; i+=step) {
+        printOnArcadeMachine(0, i);
+        yield return new WaitForSeconds(SHOW_DELAY/step);
+    }
+    yield return new WaitForSeconds(SHOW_DELAY);
+
+    // printOnFirstPencil  
+    for (int i = -shift*step; i < 0; i+=step) {
+        printOnFirstPencil(0, i);
+        yield return new WaitForSeconds(SHOW_DELAY/step);
+    }
+    yield return new WaitForSeconds(SHOW_DELAY);
+
+    // printOnSecondPencil
+    for (int i = -shift*step; i < 0; i+=step) {
+        printOnSecondPencil(0, i);
+        yield return new WaitForSeconds(SHOW_DELAY/step);
+    }
+
+    // printOnPaper
+    for (int i = -shift*step; i < 0; i+=step) {
+        printOnPaper(0, i);
+        yield return new WaitForSeconds(SHOW_DELAY/step);
+    }
+
+    // start HandheldGameConsoleDemo
+    HandheldGameConsoleDemo.enabled = true;
+    yield return new WaitForSeconds(SHOW_DELAY);
+
+    // start MiniArcadeMachineDemo
+    MiniArcadeMachineDemo.enabled = true;
+  }
+
+  private void printOnEraser(int shiftX, int shiftY) {
+    if (eraserTexture == null) {
+      eraserTexture = cloneTexture2D (defaultEraserTexture);
+    } else {
+      eraserTexture.SetPixels (defaultEraserTexture.GetPixels ());
+    }
+
     EraserMaterial.mainTexture = eraserTexture;
-    var eraserText = BEST_ERASER;
-    var eraserTextX = 126;
-    var eraserTextY = 80;
-    var eraserTextScale = 2;
-    var eraserTextBounds = 4;
-    var eraserTextHalfBounds = eraserTextBounds / 2;
-    var eraserTextWidth = eraserTexture.PixGetTextWidth (eraserText, zxFont, eraserTextScale);
-    var eraserTextHeight = zxFontHeight * eraserTextScale;
-    eraserTexture.PixRectangle (eraserTextX - eraserTextHalfBounds, eraserTextY - eraserTextHalfBounds, eraserTextHeight + eraserTextBounds, eraserTextWidth + eraserTextBounds, Color.white, true);
-    eraserTexture.PixPrintText (eraserText, zxFont, eraserTextX, eraserTextY, alphaColor : zxFontAlpha, tintColor : Color.grey, scale : eraserTextScale, rotate : 1);
+    var eraserTextWidth = eraserTexture.PixGetTextWidth (ERASER_TEXT, zxFont, 2);
+    var eraserTextHeight = zxFontHeight * 2;
+    eraserTexture.PixRectangle (124 + shiftX, 78 + shiftY, eraserTextHeight + 4, eraserTextWidth + 4, Color.white, true);
+    eraserTexture.PixPrintText (ERASER_TEXT, zxFont, 126 + shiftX, 80 + shiftY, alphaColor : zxFontAlpha, tintColor : Color.grey, scale : 2, rotate : 1);
     eraserTexture.Apply ();
+  }
 
-    defaultPaperTexture = (Texture2D) PaperMaterial.mainTexture;
-    Texture2D paperTexture = cloneTexture2D (defaultPaperTexture);
-    PaperMaterial.mainTexture = paperTexture;
-    var title = TITLE;
-    paperTexture.PixPrintText (title, zxFont, 20+2, 80+2, alphaColor : zxFontAlpha, tintColor : Color.gray, scale : 4, rotate : 0);
-    paperTexture.PixPrintText (title, zxFont, 20, 80, alphaColor : zxFontAlpha, tintColor : Color.red, scale : 4, rotate : 0);
-    var descColor = Color.gray;
-    var descTextHeight = zxFontHeight * 3 + 4;
-    var descX = 17;
-    var descY = 150;
-    paperTexture.PixPrintText (DESC_1, marksmanFont, descX, descY, alphaColor : marksmanFontAlpha, tintColor : descColor, scale : 2, rotate : 0);
-    paperTexture.PixPrintText (DESC_2, marksmanFont, descX, descY + descTextHeight, alphaColor : marksmanFontAlpha, tintColor : descColor, scale : 2, rotate : 0);
-    paperTexture.PixPrintText (DESC_3, marksmanFont, descX, descY + descTextHeight * 2, alphaColor : marksmanFontAlpha, tintColor : descColor, scale : 2, rotate : 0);
-    paperTexture.PixPrintText (DESC_4, marksmanFont, descX+250, descY + descTextHeight * 6, alphaColor : marksmanFontAlpha, tintColor : descColor, scale : 2, rotate : 0);
-    paperTexture.Apply ();
+  private void printOnArcadeMachine(int shiftX, int shiftY) {
+    if (arcadeMachineBodyTexture == null) {
+      arcadeMachineBodyTexture = cloneTexture2D (defaultArcadeMachineBodyTexture);
+    } else {
+      arcadeMachineBodyTexture.SetPixels (defaultArcadeMachineBodyTexture.GetPixels ());
+    }
 
-    defaultPencil1Texture = (Texture2D) Pencil1Material.mainTexture;
-    Texture2D pencil1Texture = cloneTexture2D (defaultPencil1Texture);
-    Pencil1Material.mainTexture = pencil1Texture;
-    var pencilText = PENCIL_DESC_1;
-    pencil1Texture.PixPrintText (pencilText, zxFont, 54, 350, alphaColor : zxFontAlpha, tintColor : Color.black, scale : 4, rotate : 1);
-    pencil1Texture.PixPrintText (pencilText, zxFont, 54 + 2, 350 + 2, alphaColor : zxFontAlpha, tintColor : Color.white, scale : 4, rotate : 1);
-    pencil1Texture.Apply ();
-
-    defaultPencil2Texture = (Texture2D) Pencil2Material.mainTexture;
-    Texture2D pencil2Texture = cloneTexture2D (defaultPencil2Texture);
-    Pencil2Material.mainTexture = pencil2Texture;
-    var pencilText2 = PENCIL_DESC_2;
-    pencil2Texture.PixPrintText (pencilText2, zxFont, 54, 390, alphaColor : zxFontAlpha, tintColor : Color.gray, scale : 4, rotate : 1);
-    pencil2Texture.PixPrintText (pencilText2, zxFont, 54 + 2, 390 + 2, alphaColor : zxFontAlpha, tintColor : Color.cyan, scale : 4, rotate : 1);
-    pencil2Texture.Apply ();
-
-    defaultMiniArcadeMachineBodyTexture = (Texture2D) MiniArcadeMachineBodyMaterial.mainTexture;
-    Texture2D arcadeMachineBodyTexture = cloneTexture2D (defaultMiniArcadeMachineBodyTexture);
     MiniArcadeMachineBodyMaterial.mainTexture = arcadeMachineBodyTexture;
-    var arcadeTextScale = 4;
-    arcadeMachineBodyTexture.PixPrintText (BEST, ubbleFont, 70, 770, alphaColor : ubbleFontAlpha, tintColor : Color.black, scale : arcadeTextScale, rotate : 0);
-    arcadeMachineBodyTexture.PixPrintText (BEST, ubbleFont, 70 + 5, 770 - 5, alphaColor : ubbleFontAlpha, tintColor : Color.yellow, scale : arcadeTextScale, rotate : 0);
-    arcadeMachineBodyTexture.PixPrintText (RETRO, ubbleFont, 330, 750, alphaColor : ubbleFontAlpha, tintColor : Color.black, scale : arcadeTextScale, rotate : 0);
-    arcadeMachineBodyTexture.PixPrintText (RETRO, ubbleFont, 330 + 5, 750 - 5, alphaColor : ubbleFontAlpha, tintColor : Color.yellow, scale : arcadeTextScale, rotate : 0);
-    arcadeMachineBodyTexture.PixPrintText (MACHINE, ubbleFont, 305, 830, alphaColor : ubbleFontAlpha, tintColor : Color.black, scale : arcadeTextScale, rotate : 0);
-    arcadeMachineBodyTexture.PixPrintText (MACHINE, ubbleFont, 305 + 5, 830 - 5, alphaColor : ubbleFontAlpha, tintColor : Color.red, scale : arcadeTextScale, rotate : 0);
-    var arcadeText = ARCADE;
-    var arcadeTextWidth = arcadeMachineBodyTexture.PixGetTextWidth (arcadeText, ubbleFont, arcadeTextScale);
-    arcadeMachineBodyTexture.PixPrintText (arcadeText, ubbleFont, 750 + 5, 60 + arcadeTextWidth - 5, alphaColor : ubbleFontAlpha, tintColor : Color.black, scale : arcadeTextScale, rotate : 3);
-    arcadeMachineBodyTexture.PixPrintText (arcadeText, ubbleFont, 750, 60 + arcadeTextWidth, alphaColor : ubbleFontAlpha, tintColor : Color.yellow, scale : arcadeTextScale, rotate : 3);
-    var foreverText = FOREVER;
-    var foreverTextWidth = arcadeMachineBodyTexture.PixGetTextWidth (foreverText, ubbleFont, arcadeTextScale);
-    arcadeMachineBodyTexture.PixPrintText (foreverText, ubbleFont, 920 - 5, 50 + foreverTextWidth - 5, alphaColor : ubbleFontAlpha, tintColor : Color.black, scale : arcadeTextScale, rotate : 3);
-    arcadeMachineBodyTexture.PixPrintText (foreverText, ubbleFont, 920, 50 + foreverTextWidth, alphaColor : ubbleFontAlpha, tintColor : Color.yellow, scale : arcadeTextScale, rotate : 3);
+    arcadeMachineBodyTexture.PixPrintText (BEST_TEXT, ubbleFont, 70 + shiftX, 770 + shiftY, alphaColor : ubbleFontAlpha, tintColor : Color.black, scale : 4, rotate : 0);
+    arcadeMachineBodyTexture.PixPrintText (BEST_TEXT, ubbleFont, 70 + 5 + shiftX, 770 - 5 + shiftY, alphaColor : ubbleFontAlpha, tintColor : Color.yellow, scale : 4, rotate : 0);
+    arcadeMachineBodyTexture.PixPrintText (RETRO_TEXT, ubbleFont, 330 + shiftX, 750 + shiftY, alphaColor : ubbleFontAlpha, tintColor : Color.black, scale : 4, rotate : 0);
+    arcadeMachineBodyTexture.PixPrintText (RETRO_TEXT, ubbleFont, 330 + 5 + shiftX, 750 - 5 + shiftY, alphaColor : ubbleFontAlpha, tintColor : Color.yellow, scale : 4, rotate : 0);
+    arcadeMachineBodyTexture.PixPrintText (MACHINE_TEXT, ubbleFont, 305 + shiftX, 830 + shiftY, alphaColor : ubbleFontAlpha, tintColor : Color.black, scale : 4, rotate : 0);
+    arcadeMachineBodyTexture.PixPrintText (MACHINE_TEXT, ubbleFont, 305 + 5 + shiftX, 830 - 5 + shiftY, alphaColor : ubbleFontAlpha, tintColor : Color.red, scale : 4, rotate : 0);
+    var arcadeTextWidth = arcadeMachineBodyTexture.PixGetTextWidth (ARCADE_TEXT, ubbleFont, 4);
+    arcadeMachineBodyTexture.PixPrintText (ARCADE_TEXT, ubbleFont, 750 + 5 + shiftX, 60 + arcadeTextWidth - 5 + shiftY, alphaColor : ubbleFontAlpha, tintColor : Color.black, scale : 4, rotate : 3);
+    arcadeMachineBodyTexture.PixPrintText (ARCADE_TEXT, ubbleFont, 750 + shiftX, 60 + arcadeTextWidth + shiftY, alphaColor : ubbleFontAlpha, tintColor : Color.yellow, scale : 4, rotate : 3);
+    var foreverTextWidth = arcadeMachineBodyTexture.PixGetTextWidth (FOREVER_TEXT, ubbleFont, 4);
+    arcadeMachineBodyTexture.PixPrintText (FOREVER_TEXT, ubbleFont, 920 - 5 + shiftX, 50 + foreverTextWidth - 5 + shiftY, alphaColor : ubbleFontAlpha, tintColor : Color.black, scale : 4, rotate : 3);
+    arcadeMachineBodyTexture.PixPrintText (FOREVER_TEXT, ubbleFont, 920 + shiftX, 50 + foreverTextWidth + shiftY, alphaColor : ubbleFontAlpha, tintColor : Color.yellow, scale : 4, rotate : 3);
     arcadeMachineBodyTexture.Apply ();
+  }
+
+  private void printOnFirstPencil(int shiftX, int shiftY) {
+    if (pencil1Texture == null) {
+      pencil1Texture = cloneTexture2D (defaultPencil1Texture);
+    } else {
+      pencil1Texture.SetPixels (defaultPencil1Texture.GetPixels ());
+    }
+
+    Pencil1Material.mainTexture = pencil1Texture;
+    pencil1Texture.PixPrintText (PENCIL_TEXT_1, zxFont, 54 + shiftX, 350 + shiftY, alphaColor : zxFontAlpha, tintColor : Color.black, scale : 4, rotate : 1);
+    pencil1Texture.PixPrintText (PENCIL_TEXT_1, zxFont, 54 + 2 + shiftX, 350 + 2 + shiftY, alphaColor : zxFontAlpha, tintColor : Color.white, scale : 4, rotate : 1);
+    pencil1Texture.Apply ();
+  }
+
+  private void printOnSecondPencil(int shiftX, int shiftY) {
+    if (pencil2Texture == null) {
+      pencil2Texture = cloneTexture2D (defaultPencil2Texture);
+    } else {
+      pencil2Texture.SetPixels (defaultPencil2Texture.GetPixels ());
+    }
+
+    Pencil2Material.mainTexture = pencil2Texture;
+    pencil2Texture.PixPrintText (PENCIL_TEXT_2, zxFont, 54 + shiftX, 390 + shiftY, alphaColor : zxFontAlpha, tintColor : Color.gray, scale : 4, rotate : 1);
+    pencil2Texture.PixPrintText (PENCIL_TEXT_2, zxFont, 54 + 2 + shiftX, 390 + 2 + shiftY, alphaColor : zxFontAlpha, tintColor : Color.cyan, scale : 4, rotate : 1);
+    pencil2Texture.Apply ();
+  }
+
+  private void printOnPaper(int shiftX, int shiftY) {
+    if (paperTexture == null) {
+      paperTexture = cloneTexture2D (defaultPaperTexture);
+    } else {
+      paperTexture.SetPixels (defaultPaperTexture.GetPixels ());
+    }
+
+    PaperMaterial.mainTexture = paperTexture;
+    paperTexture.PixPrintText (TITLE, zxFont, 20+2 + shiftX, 80+2 + shiftY, alphaColor : zxFontAlpha, tintColor : Color.gray, scale : 4, rotate : 0);
+    paperTexture.PixPrintText (TITLE, zxFont, 20 + shiftX, 80 + shiftY, alphaColor : zxFontAlpha, tintColor : Color.red, scale : 4, rotate : 0);
+    var descTextHeight = zxFontHeight * 3 + 4;
+    paperTexture.PixPrintText (DESC_1, marksmanFont, 17 + shiftX, 150 + shiftY, alphaColor : marksmanFontAlpha, tintColor : Color.gray, scale : 2, rotate : 0);
+    paperTexture.PixPrintText (DESC_2, marksmanFont, 17 + shiftX, 150 + descTextHeight + shiftY, alphaColor : marksmanFontAlpha, tintColor : Color.gray, scale : 2, rotate : 0);
+    paperTexture.PixPrintText (DESC_3, marksmanFont, 17 + shiftX, 150 + descTextHeight * 2 + shiftY, alphaColor : marksmanFontAlpha, tintColor : Color.gray, scale : 2, rotate : 0);
+    paperTexture.PixPrintText (DESC_4, marksmanFont, 17 + 250 + shiftX, 150 + descTextHeight * 6 + shiftY, alphaColor : marksmanFontAlpha, tintColor : Color.gray, scale : 2, rotate : 0);
+    paperTexture.Apply ();
   }
 
   private Texture2D cloneTexture2D (Texture2D source) {
@@ -144,7 +221,7 @@ public class PixelTraceryScene : MonoBehaviour {
     PaperMaterial.mainTexture = defaultPaperTexture;
     Pencil1Material.mainTexture = defaultPencil1Texture;
     Pencil2Material.mainTexture = defaultPencil2Texture;
-    MiniArcadeMachineBodyMaterial.mainTexture = defaultMiniArcadeMachineBodyTexture;
+    MiniArcadeMachineBodyMaterial.mainTexture = defaultArcadeMachineBodyTexture;
   }
 
 }
